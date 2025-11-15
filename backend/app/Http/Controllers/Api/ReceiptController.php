@@ -103,12 +103,10 @@ class ReceiptController extends Controller
     public function show(Request $request, $id)
     {
         $receipt = Receipt::where('user_id', $request->user()->id)
-            ->with('lineItems')
+            ->with(['lineItems', 'extractionLogs'])
             ->findOrFail($id);
 
-        return response()->json([
-            'receipt' => $receipt,
-        ]);
+        return response()->json($receipt);
     }
 
     /**
@@ -124,9 +122,21 @@ class ReceiptController extends Controller
             'date' => ['nullable', 'date'],
             'total' => ['nullable', 'numeric', 'min:0'],
             'tax' => ['nullable', 'numeric', 'min:0'],
+            'status' => ['nullable', 'in:pending,processing,completed,failed'],
+            'line_items' => ['nullable', 'array'],
+            'line_items.*.description' => ['required', 'string', 'max:255'],
+            'line_items.*.quantity' => ['required', 'numeric', 'min:0'],
+            'line_items.*.unit_price' => ['required', 'numeric', 'min:0'],
+            'line_items.*.total_price' => ['required', 'numeric', 'min:0'],
         ]);
 
-        $receipt->update($validated);
+        $receipt->update([
+            'vendor' => $validated['vendor'] ?? $receipt->vendor,
+            'date' => $validated['date'] ?? $receipt->date,
+            'total' => $validated['total'] ?? $receipt->total,
+            'tax' => $validated['tax'] ?? $receipt->tax,
+            'status' => $validated['status'] ?? $receipt->status,
+        ]);
 
         // Update line items if provided
         if ($request->has('line_items')) {
@@ -137,9 +147,9 @@ class ReceiptController extends Controller
             foreach ($request->line_items as $item) {
                 $receipt->lineItems()->create([
                     'description' => $item['description'],
-                    'quantity' => $item['quantity'] ?? 1,
+                    'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'],
-                    'amount' => $item['amount'],
+                    'total_price' => $item['total_price'],
                 ]);
             }
         }
