@@ -12,6 +12,7 @@ A web application that uses AI to extract structured data from receipt and invoi
 - **Frontend:** React with TailwindCSS
 - **Database:** SQLite
 - **AI/ML:** OCR and data extraction powered by Claude API
+- **Containerization:** Docker
 
 ---
 
@@ -33,6 +34,13 @@ A web application that uses AI to extract structured data from receipt and invoi
 - Configure local development server
 - Set up hot reload for frontend
 - API endpoint configuration
+
+### Docker Setup
+- Create Dockerfile for Laravel backend
+- Create Dockerfile for React frontend
+- Create docker-compose.yml for orchestration
+- Configure volumes for persistent data (database, uploads)
+- Set up networking between containers
 
 ---
 
@@ -233,21 +241,31 @@ Return as JSON with this structure: {
 
 ## 10. Deployment
 
+### Docker Deployment
+- Multi-stage Docker builds for optimized image sizes
+- Production-ready docker-compose configuration
+- Environment-specific .env files
+- Volume mounts for SQLite database persistence
+- Volume mounts for uploaded files persistence
+- Health checks for containers
+
 ### Backend Deployment
 - Environment configuration
-- Database migrations
+- Database migrations (run on container startup)
 - File storage setup
 - API key configuration
 
 ### Frontend Deployment
 - Build production bundle
 - Configure API endpoint
-- Static file hosting
+- Nginx or Apache serving static files
 
 ### Infrastructure
-- Single server deployment (backend + frontend)
-- SQLite database (no separate DB server needed)
-- File storage directory with proper permissions
+- Docker container deployment (backend + frontend)
+- SQLite database in persistent volume
+- File storage directory with proper permissions in persistent volume
+- Container networking between frontend and backend
+- Optional: Docker Compose for local development and production
 
 ---
 
@@ -274,7 +292,7 @@ Return as JSON with this structure: {
 ## 12. Development Timeline (16 hours)
 
 ### Phase 1: Setup & Backend (6 hours)
-- Project initialization (1 hour)
+- Project initialization & Docker setup (1 hour)
 - Database schema & migrations (1 hour)
 - Authentication system (1 hour)
 - File upload & storage (1 hour)
@@ -310,16 +328,19 @@ APP_URL=http://localhost:8000
 
 # Database
 DB_CONNECTION=sqlite
-DB_DATABASE=/path/to/database.sqlite
+DB_DATABASE=/var/www/html/database/database.sqlite
 
-# AI Service (example for OpenAI)
-OPENAI_API_KEY=your_api_key_here
+# Claude AI Service
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
 
 # CORS
 FRONTEND_URL=http://localhost:3000
 
 # File Storage
 UPLOAD_MAX_SIZE=10M
+
+# Docker
+COMPOSE_PROJECT_NAME=ride
 ```
 
 ---
@@ -354,30 +375,40 @@ RIDE/
 │   │   └── migrations/
 │   ├── routes/
 │   │   └── api.php
-│   └── storage/
-│       └── uploads/
+│   ├── storage/
+│   │   └── uploads/
+│   ├── Dockerfile
+│   └── .dockerignore
 │
-└── frontend/               # React application
-    ├── src/
-    │   ├── components/
-    │   ├── pages/
-    │   ├── services/
-    │   └── App.jsx
-    └── public/
+├── frontend/               # React application
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── App.jsx
+│   ├── public/
+│   ├── Dockerfile
+│   └── .dockerignore
+│
+├── docker-compose.yml      # Docker orchestration
+├── .env.example           # Environment variables template
+└── README.md              # Setup and usage instructions
 ```
 
 ---
 
 ## Success Criteria
 
-1. Users can register and log in
-2. Users can upload receipt/invoice images
-3. AI successfully extracts structured data with reasonable accuracy
-4. Users can view all receipts in a list
-5. Users can view individual receipt details with line items
-6. Users can export data to CSV format
-7. Application is responsive and works on mobile devices
-8. Basic error handling is in place
+1. Application runs successfully in Docker containers
+2. Users can register and log in
+3. Users can upload receipt/invoice images
+4. AI successfully extracts structured data with reasonable accuracy
+5. Users can view all receipts in a list
+6. Users can view individual receipt details with line items
+7. Users can export data to CSV and Excel formats
+8. Application is responsive and works on mobile devices
+9. Basic error handling is in place
+10. Data persists across container restarts
 
 ---
 
@@ -406,3 +437,7 @@ RIDE/
 - Implement proper error handling throughout
 - Keep API responses consistent (JSON format)
 - Use environment variables for all configuration
+- Ensure Docker containers are production-ready with proper security practices
+- Use multi-stage builds to minimize image sizes
+- Configure proper volume mounts for data persistence
+- Implement health checks for container orchestration
