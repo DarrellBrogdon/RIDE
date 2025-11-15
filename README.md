@@ -18,8 +18,8 @@ RIDE (Receipt & Invoice Data Extractor) helps small businesses track expenses by
 
 ## Tech Stack
 
-- **Backend:** PHP 8.2 with Laravel 11
-- **Frontend:** React 18 with TailwindCSS
+- **Backend:** PHP 8.3 with Laravel 12
+- **Frontend:** React 19 with TailwindCSS
 - **Database:** SQLite
 - **AI/ML:** Claude API (Anthropic)
 - **Containerization:** Docker with Alpine-based images
