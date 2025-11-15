@@ -1,0 +1,55 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Environment files
+.env
+.env.*
+
+# Dependencies
+/vendor
+/node_modules
+
+# IDE files
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+/public/build
+/public/hot
+/public/storage
+
+# Test files
+tests/
+phpunit.xml
+.phpunit.result.cache
+
+# Documentation
+*.md
+
+# Logs
+*.log
+storage/logs/*
+
+# Cache
+bootstrap/cache/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+
+# Database
+*.sqlite
+*.sqlite-journal
+database/*.sqlite
+
+# Temporary files
+tmp/
+temp/
