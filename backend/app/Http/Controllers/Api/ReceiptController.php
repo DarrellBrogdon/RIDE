@@ -75,9 +75,10 @@ class ReceiptController extends Controller
             $query->status($request->status);
         }
 
-        // Filter by vendor
-        if ($request->has('vendor')) {
-            $query->vendor($request->vendor);
+        // Search by vendor (support both 'search' and 'vendor' parameters)
+        $searchTerm = $request->get('search') ?: $request->get('vendor');
+        if ($searchTerm) {
+            $query->vendor($searchTerm);
         }
 
         // Filter by date range

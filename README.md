@@ -37,29 +37,46 @@ RIDE (Receipt & Invoice Data Extractor) helps small businesses track expenses by
    cd RIDE
    ```
 
-2. **Configure environment variables**
+2. **Configure backend environment**
    ```bash
+   cd backend
    cp .env.example .env
    ```
 
-   Edit `.env` and add your Anthropic API key:
+   Edit `backend/.env` and add your Claude API key:
    ```
-   ANTHROPIC_API_KEY=your_api_key_here
-   ```
-
-3. **Build and start the containers**
-   ```bash
-   docker-compose up --build
+   CLAUDE_API_KEY=your_api_key_here
    ```
 
-4. **Run database migrations**
+3. **Configure frontend environment**
    ```bash
+   cd ../frontend
+   cp .env.example .env
+   cd ..
+   ```
+
+4. **Build and start the containers**
+   ```bash
+   docker-compose up --build -d
+   ```
+
+5. **Initialize the backend**
+   ```bash
+   # Generate application key
+   docker-compose exec backend php artisan key:generate
+
+   # Create database file
+   docker-compose exec backend touch database/database.sqlite
+
+   # Run migrations
    docker-compose exec backend php artisan migrate
    ```
 
-5. **Access the application**
+6. **Access the application**
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:8000
+
+For detailed setup and testing instructions, see [SETUP_AND_TESTING.md](SETUP_AND_TESTING.md).
 
 ## Development
 
@@ -154,19 +171,23 @@ RIDE/
 
 ## Environment Variables
 
-See `.env.example` for all available configuration options.
+See `backend/.env.example` and `frontend/.env.example` for all available configuration options.
 
-### Required Variables
+### Backend Required Variables
 
-- `ANTHROPIC_API_KEY` - Your Claude API key
-- `APP_KEY` - Laravel application key (generated automatically)
+- `CLAUDE_API_KEY` - Your Claude API key from Anthropic
+- `APP_KEY` - Laravel application key (generated with `php artisan key:generate`)
 
-### Optional Variables
+### Backend Optional Variables
 
 - `APP_ENV` - Application environment (local, production)
 - `APP_DEBUG` - Enable debug mode (true, false)
-- `FRONTEND_URL` - Frontend URL for CORS
-- `UPLOAD_MAX_SIZE` - Maximum upload file size
+- `CORS_ALLOWED_ORIGINS` - Frontend URL for CORS (default: http://localhost:3000)
+- `UPLOAD_MAX_SIZE` - Maximum upload file size in MB (default: 10)
+
+### Frontend Variables
+
+- `VITE_API_URL` - Backend API URL (default: http://localhost:8000)
 
 ## Troubleshooting
 
