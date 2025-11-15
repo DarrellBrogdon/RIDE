@@ -73,7 +73,8 @@ export default function FileUploader({ onUploadSuccess }) {
     accept: {
       'image/jpeg': ['.jpg', '.jpeg'],
       'image/png': ['.png'],
-      'application/pdf': ['.pdf'],
+      'image/gif': ['.gif'],
+      'image/webp': ['.webp'],
     },
     maxSize: 10 * 1024 * 1024, // 10MB
     multiple: true,
@@ -101,7 +102,7 @@ export default function FileUploader({ onUploadSuccess }) {
             : 'Drag & drop receipt images here, or click to select'}
         </p>
         <p className="mt-1 text-xs text-gray-500">
-          Supports JPG, PNG, PDF (max 10MB)
+          Supports JPG, PNG, GIF, WebP (max 10MB)
         </p>
       </div>
 

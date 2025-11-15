@@ -20,7 +20,7 @@ class ReceiptController extends Controller
             'file' => [
                 'required',
                 'file',
-                'mimes:jpg,jpeg,png,pdf',
+                'mimes:jpg,jpeg,png,gif,webp',
                 'max:' . (env('UPLOAD_MAX_SIZE', 10) * 1024), // Convert MB to KB
             ],
         ]);

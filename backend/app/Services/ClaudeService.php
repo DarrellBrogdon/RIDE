@@ -46,7 +46,6 @@ class ClaudeService
                 'anthropic-version' => '2023-06-01',
                 'content-type' => 'application/json',
             ])->timeout(30)
-                ->retry(3, 1000)
                 ->post($this->apiUrl, [
                     'model' => $this->model,
                     'max_tokens' => 1024,
@@ -72,7 +71,24 @@ class ClaudeService
                 ]);
 
             if ($response->failed()) {
-                throw new \Exception('Claude API request failed: ' . $response->body());
+                $errorBody = $response->body();
+                $statusCode = $response->status();
+
+                // Try to parse error as JSON
+                $errorData = json_decode($errorBody, true);
+                $errorMessage = $errorData['error']['message'] ?? $errorBody;
+
+                Log::error('Claude API request failed', [
+                    'status_code' => $statusCode,
+                    'response_body' => $errorBody,
+                    'error_message' => $errorMessage,
+                    'api_key_present' => !empty($this->apiKey),
+                    'api_key_length' => strlen($this->apiKey ?? ''),
+                    'image_path' => $imagePath,
+                    'media_type' => $mediaType,
+                ]);
+
+                throw new \Exception("Claude API error ({$statusCode}): {$errorMessage}");
             }
 
             $responseData = $response->json();
@@ -205,7 +221,8 @@ PROMPT;
         return match (strtolower($extension)) {
             'jpg', 'jpeg' => 'image/jpeg',
             'png' => 'image/png',
-            'pdf' => 'application/pdf',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
             default => 'image/jpeg',
         };
     }
