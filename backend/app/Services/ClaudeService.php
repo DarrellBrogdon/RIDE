@@ -10,7 +10,7 @@ class ClaudeService
 {
     protected string $apiKey;
     protected string $apiUrl = 'https://api.anthropic.com/v1/messages';
-    protected string $model = 'claude-3-5-sonnet-20241022';
+    protected string $model = 'claude-sonnet-4-5';
 
     public function __construct()
     {
