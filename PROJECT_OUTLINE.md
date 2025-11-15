@@ -36,8 +36,8 @@ A web application that uses AI to extract structured data from receipt and invoi
 - API endpoint configuration
 
 ### Docker Setup
-- Create Dockerfile for Laravel backend
-- Create Dockerfile for React frontend
+- Create Dockerfile for Laravel backend (Alpine-based)
+- Create Dockerfile for React frontend (Alpine-based)
 - Create docker-compose.yml for orchestration
 - Configure volumes for persistent data (database, uploads)
 - Set up networking between containers
@@ -242,7 +242,7 @@ Return as JSON with this structure: {
 ## 10. Deployment
 
 ### Docker Deployment
-- Multi-stage Docker builds for optimized image sizes
+- Multi-stage Alpine-based Docker builds for optimized image sizes
 - Production-ready docker-compose configuration
 - Environment-specific .env files
 - Volume mounts for SQLite database persistence
@@ -438,6 +438,7 @@ RIDE/
 - Keep API responses consistent (JSON format)
 - Use environment variables for all configuration
 - Ensure Docker containers are production-ready with proper security practices
+- Use Alpine-based images for minimal container sizes and security
 - Use multi-stage builds to minimize image sizes
 - Configure proper volume mounts for data persistence
 - Implement health checks for container orchestration
