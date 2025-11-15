@@ -1,7 +1,7 @@
 # Multi-stage Dockerfile for Laravel on Alpine
 
 # Build stage
-FROM php:8.2-fpm-alpine AS build
+FROM php:8.3-fpm-alpine AS build
 
 # Install system dependencies and PHP extensions
 RUN apk add --no-cache \
@@ -37,26 +37,39 @@ COPY composer.json composer.lock* ./
 # RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
 # Runtime stage
-FROM php:8.2-fpm-alpine
+FROM php:8.3-fpm-alpine
 
-# Install runtime dependencies only
+# Install build dependencies and runtime dependencies
 RUN apk add --no-cache \
     bash \
     curl \
     sqlite \
     sqlite-dev \
     libzip \
+    libzip-dev \
     libpng \
+    libpng-dev \
     libjpeg-turbo \
+    libjpeg-turbo-dev \
     freetype \
+    freetype-dev \
     oniguruma \
+    oniguruma-dev \
+    zlib-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
         pdo_sqlite \
         gd \
         zip \
         mbstring \
-        opcache
+        opcache \
+    && apk del --no-cache \
+        libzip-dev \
+        libpng-dev \
+        libjpeg-turbo-dev \
+        freetype-dev \
+        oniguruma-dev \
+        zlib-dev
 
 # Install Composer in runtime
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
