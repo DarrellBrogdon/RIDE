@@ -183,4 +183,22 @@ class ReceiptController extends Controller
             'message' => 'Receipt deleted successfully',
         ]);
     }
+
+    /**
+     * Serve the receipt image file.
+     */
+    public function image(Request $request, $id)
+    {
+        $receipt = Receipt::where('user_id', $request->user()->id)
+            ->findOrFail($id);
+
+        if (!Storage::exists($receipt->file_path)) {
+            abort(404, 'Image not found');
+        }
+
+        $file = Storage::get($receipt->file_path);
+        $mimeType = Storage::mimeType($receipt->file_path);
+
+        return response($file, 200)->header('Content-Type', $mimeType);
+    }
 }

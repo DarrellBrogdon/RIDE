@@ -24,21 +24,63 @@ export default function ReceiptDetail() {
   const [error, setError] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [imageUrl, setImageUrl] = useState(null);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     fetchReceipt();
   }, [id]);
 
+  useEffect(() => {
+    if (receipt?.file_path) {
+      fetchImage();
+    }
+
+    // Cleanup blob URL on unmount
+    return () => {
+      if (imageUrl) {
+        URL.revokeObjectURL(imageUrl);
+      }
+    };
+  }, [receipt]);
+
   const fetchReceipt = async () => {
     try {
       setLoading(true);
       const response = await api.get(`/receipts/${id}`);
+      console.log('Receipt data:', response.data);
+      console.log('Total:', response.data.total, 'Type:', typeof response.data.total);
+      console.log('Tax:', response.data.tax, 'Type:', typeof response.data.tax);
+      console.log('All keys:', Object.keys(response.data));
       setReceipt(response.data);
     } catch (err) {
       console.error('Failed to fetch receipt:', err);
       setError(err.response?.data?.message || 'Failed to load receipt');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchImage = async () => {
+    try {
+      setImageLoading(true);
+      setImageError(false);
+
+      // Fetch the image with authentication
+      const response = await api.get(`/receipts/${id}/image`, {
+        responseType: 'blob',
+      });
+
+      // Create a blob URL
+      const blob = new Blob([response.data], { type: response.headers['content-type'] });
+      const url = URL.createObjectURL(blob);
+      setImageUrl(url);
+    } catch (err) {
+      console.error('Failed to fetch image:', err);
+      setImageError(true);
+    } finally {
+      setImageLoading(false);
     }
   };
 
@@ -282,7 +324,9 @@ export default function ReceiptDetail() {
                       <DollarSign className="h-5 w-5 text-gray-400 mr-1" />
                       <span className="text-base text-gray-900">
                         {receipt.total && receipt.tax
-                          ? `$${(parseFloat(receipt.total) - parseFloat(receipt.tax)).toFixed(2)}`
+                          ? `$${(parseFloat(receipt.total || 0) - parseFloat(receipt.tax || 0)).toFixed(2)}`
+                          : receipt.total && !receipt.tax
+                          ? `$${parseFloat(receipt.total || 0).toFixed(2)}`
                           : '-'}
                       </span>
                     </div>
@@ -295,7 +339,7 @@ export default function ReceiptDetail() {
                     <div className="flex items-center">
                       <DollarSign className="h-5 w-5 text-gray-400 mr-1" />
                       <span className="text-base text-gray-900">
-                        {receipt.tax ? `$${parseFloat(receipt.tax).toFixed(2)}` : '-'}
+                        {receipt.tax != null && receipt.tax !== '' ? `$${parseFloat(receipt.tax).toFixed(2)}` : '$0.00'}
                       </span>
                     </div>
                   </div>
@@ -307,7 +351,10 @@ export default function ReceiptDetail() {
                     <div className="flex items-center">
                       <DollarSign className="h-6 w-6 text-gray-400 mr-1" />
                       <span className="text-2xl font-bold text-gray-900">
-                        {receipt.total ? `$${parseFloat(receipt.total).toFixed(2)}` : '-'}
+                        {(() => {
+                          console.log('Total in render:', receipt.total, 'Parsed:', parseFloat(receipt.total));
+                          return receipt.total != null && receipt.total !== '' ? `$${parseFloat(receipt.total).toFixed(2)}` : '-';
+                        })()}
                       </span>
                     </div>
                   </div>
@@ -346,10 +393,10 @@ export default function ReceiptDetail() {
                               {item.quantity}
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                              ${parseFloat(item.unit_price).toFixed(2)}
+                              ${parseFloat(item.unit_price || 0).toFixed(2)}
                             </td>
                             <td className="px-4 py-3 text-sm font-medium text-gray-900 text-right">
-                              ${parseFloat(item.total_price).toFixed(2)}
+                              ${parseFloat(item.amount || 0).toFixed(2)}
                             </td>
                           </tr>
                         ))}
@@ -368,33 +415,38 @@ export default function ReceiptDetail() {
                 {receipt.file_path ? (
                   <div className="space-y-4">
                     <div className="border border-gray-200 rounded-lg overflow-hidden">
-                      <img
-                        src={`${import.meta.env.VITE_API_URL}/storage/${receipt.file_path}`}
-                        alt="Receipt"
-                        className="w-full h-auto"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
-                      />
-                      <div
-                        className="hidden flex-col items-center justify-center p-8 bg-gray-50"
-                        style={{ minHeight: '200px' }}
-                      >
-                        <ReceiptIcon className="h-12 w-12 text-gray-400" />
-                        <p className="mt-2 text-sm text-gray-500">Image not available</p>
-                      </div>
+                      {imageLoading ? (
+                        <div className="flex items-center justify-center p-8 bg-gray-50" style={{ minHeight: '200px' }}>
+                          <div className="text-center">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                            <p className="mt-2 text-sm text-gray-500">Loading image...</p>
+                          </div>
+                        </div>
+                      ) : imageError ? (
+                        <div className="flex flex-col items-center justify-center p-8 bg-gray-50" style={{ minHeight: '200px' }}>
+                          <ReceiptIcon className="h-12 w-12 text-gray-400" />
+                          <p className="mt-2 text-sm text-gray-500">Image not available</p>
+                        </div>
+                      ) : imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt="Receipt"
+                          className="w-full h-auto"
+                        />
+                      ) : null}
                     </div>
-                    <a
-                      href={`${import.meta.env.VITE_API_URL}/storage/${receipt.file_path}`}
-                      download
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center w-full px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Download Original
-                    </a>
+                    {imageUrl && (
+                      <a
+                        href={imageUrl}
+                        download
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center w-full px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download Original
+                      </a>
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-8">

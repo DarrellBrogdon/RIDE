@@ -39,6 +39,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/', [ReceiptController::class, 'index']);
             Route::get('/export', [ExportController::class, 'export']);
             Route::get('/{id}', [ReceiptController::class, 'show']);
+            Route::get('/{id}/image', [ReceiptController::class, 'image']);
             Route::put('/{id}', [ReceiptController::class, 'update']);
             Route::delete('/{id}', [ReceiptController::class, 'destroy']);
         });
