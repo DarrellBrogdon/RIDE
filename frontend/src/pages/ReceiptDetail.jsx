@@ -171,6 +171,12 @@ export default function ReceiptDetail() {
                 >
                   Export
                 </Link>
+                <Link
+                  to="/account"
+                  className="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium"
+                >
+                  Account
+                </Link>
               </div>
             </div>
             <div className="flex items-center space-x-4">

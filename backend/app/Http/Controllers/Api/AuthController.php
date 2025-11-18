@@ -99,4 +99,90 @@ class AuthController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Update user profile.
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+        ]);
+
+        $user->update($validated);
+
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
+        ]);
+    }
+
+    /**
+     * Update user password.
+     */
+    public function updatePassword(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'current_password' => ['required'],
+            'new_password' => ['required', 'confirmed', Password::min(8)],
+        ]);
+
+        // Check if current password is correct
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['The current password is incorrect.'],
+            ]);
+        }
+
+        // Update password
+        $user->update([
+            'password' => Hash::make($validated['new_password']),
+        ]);
+
+        // Revoke all tokens except the current one
+        $currentTokenId = $request->user()->currentAccessToken()->id;
+        $user->tokens()->where('id', '!=', $currentTokenId)->delete();
+
+        return response()->json([
+            'message' => 'Password updated successfully',
+        ]);
+    }
+
+    /**
+     * Delete user account.
+     */
+    public function deleteAccount(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'password' => ['required'],
+        ]);
+
+        // Verify password
+        if (!Hash::check($validated['password'], $user->password)) {
+            throw ValidationException::withMessages([
+                'password' => ['The password is incorrect.'],
+            ]);
+        }
+
+        // Delete all user's tokens
+        $user->tokens()->delete();
+
+        // Delete user (soft delete - will cascade delete receipts, line items, logs)
+        $user->delete();
+
+        return response()->json([
+            'message' => 'Account deleted successfully',
+        ]);
+    }
 }

@@ -8,6 +8,7 @@ import Receipts from './pages/Receipts';
 import ReceiptDetail from './pages/ReceiptDetail';
 import ReceiptEdit from './pages/ReceiptEdit';
 import Export from './pages/Export';
+import Account from './pages/Account';
 
 function App() {
   return (
@@ -53,6 +54,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Export />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute>
+                <Account />
               </ProtectedRoute>
             }
           />
