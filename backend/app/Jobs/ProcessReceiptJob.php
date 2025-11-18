@@ -82,10 +82,14 @@ class ProcessReceiptJob implements ShouldQueue
                     ]);
                 }
 
-                // Update extraction log
+                // Update extraction log with usage data
                 $log->update([
                     'status' => 'success',
                     'processing_time' => $result['processing_time'],
+                    'model' => $result['usage']['model'] ?? null,
+                    'input_tokens' => $result['usage']['input_tokens'] ?? null,
+                    'output_tokens' => $result['usage']['output_tokens'] ?? null,
+                    'cost' => $result['usage']['cost'] ?? null,
                 ]);
 
                 Log::info('Receipt processed successfully', [

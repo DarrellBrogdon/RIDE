@@ -474,6 +474,45 @@ export default function ReceiptDetail() {
                   </p>
                 </div>
               )}
+
+              {/* AI Usage Information */}
+              {receipt.extraction_logs && receipt.extraction_logs.length > 0 && receipt.extraction_logs[0].cost && (
+                <div className="bg-white shadow rounded-lg p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">AI Processing Details</h3>
+                  <dl className="grid grid-cols-1 gap-4">
+                    {receipt.extraction_logs[0].model && (
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Model</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{receipt.extraction_logs[0].model}</dd>
+                      </div>
+                    )}
+                    {receipt.extraction_logs[0].input_tokens && (
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Input Tokens</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{receipt.extraction_logs[0].input_tokens.toLocaleString()}</dd>
+                      </div>
+                    )}
+                    {receipt.extraction_logs[0].output_tokens && (
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Output Tokens</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{receipt.extraction_logs[0].output_tokens.toLocaleString()}</dd>
+                      </div>
+                    )}
+                    {receipt.extraction_logs[0].processing_time && (
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Processing Time</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{(receipt.extraction_logs[0].processing_time / 1000).toFixed(2)}s</dd>
+                      </div>
+                    )}
+                    <div className="pt-4 border-t border-gray-200">
+                      <dt className="text-sm font-medium text-gray-500">AI Processing Cost</dt>
+                      <dd className="mt-1 text-lg font-semibold text-gray-900">
+                        ${parseFloat(receipt.extraction_logs[0].cost).toFixed(4)}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              )}
             </div>
           </div>
         </div>

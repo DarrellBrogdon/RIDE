@@ -20,6 +20,10 @@ class ExtractionLog extends Model
         'status',
         'error_message',
         'processing_time',
+        'model',
+        'input_tokens',
+        'output_tokens',
+        'cost',
     ];
 
     /**
@@ -29,6 +33,9 @@ class ExtractionLog extends Model
      */
     protected $casts = [
         'processing_time' => 'integer',
+        'input_tokens' => 'integer',
+        'output_tokens' => 'integer',
+        'cost' => 'decimal:6',
     ];
 
     /**

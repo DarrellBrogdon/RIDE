@@ -93,6 +93,8 @@ class ClaudeService
 
             $responseData = $response->json();
 
+            Log::debug('Raw Claude API response: ' . json_encode($responseData, JSON_PRETTY_PRINT));
+
             // Extract text content from response
             $textContent = $responseData['content'][0]['text'] ?? '';
 
@@ -101,11 +103,25 @@ class ClaudeService
 
             $processingTime = (int)((microtime(true) - $startTime) * 1000);
 
+            // Extract usage information
+            $usage = $responseData['usage'] ?? [];
+            $inputTokens = $usage['input_tokens'] ?? 0;
+            $outputTokens = $usage['output_tokens'] ?? 0;
+
+            // Calculate cost using AnthropicPricing service
+            $cost = AnthropicPricing::calculateCost($this->model, $inputTokens, $outputTokens);
+
             return [
                 'success' => true,
                 'data' => $extractedData,
                 'raw_response' => $responseData,
                 'processing_time' => $processingTime,
+                'usage' => [
+                    'model' => $this->model,
+                    'input_tokens' => $inputTokens,
+                    'output_tokens' => $outputTokens,
+                    'cost' => $cost,
+                ],
             ];
 
         } catch (\Exception $e) {
