@@ -63,7 +63,24 @@ export default function Export() {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Failed to export receipts:', err);
-      setError(err.response?.data?.message || 'Failed to export receipts. Please try again.');
+
+      // Handle 404 - no receipts found
+      if (err.response?.status === 404) {
+        setError('No receipts found for the selected date range. Try adjusting your filters or selecting a different time period.');
+      } else {
+        // For blob responses, we need to read the error message
+        if (err.response?.data instanceof Blob) {
+          const text = await err.response.data.text();
+          try {
+            const json = JSON.parse(text);
+            setError(json.message || 'Failed to export receipts. Please try again.');
+          } catch {
+            setError('Failed to export receipts. Please try again.');
+          }
+        } else {
+          setError(err.response?.data?.message || 'Failed to export receipts. Please try again.');
+        }
+      }
     } finally {
       setExporting(false);
     }

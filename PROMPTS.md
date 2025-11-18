@@ -5762,6 +5762,47 @@ Next, I want to present or log AI usage costs somewhere.  This is from `$respons
   Try exporting with "All Time" now and it should work!
 
 ## PROMPT:
+It works when I test those.  It doesn't when I select "today" and, in fact, it's working properly but the error is misleading.  It says, "Failed to export receipts. Please try again." which suggests there was
+some problem with the system.  What it should say is that there were no receipts found for the selected time period.
+
+## RESPONSE:
+⏺ You're absolutely right! The error message is misleading. The backend is actually returning a 404 with the message "No receipts found for export", but the frontend is catching that and displaying the generic
+  error message. Let me fix the frontend to handle the 404 case specifically:
+
+⏺ Update(~/Documents/Development/BrogdonCo/RIDE/frontend/src/pages/Export.jsx)
+  ⎿  Updated ../frontend/src/pages/Export.jsx with 18 additions and 1 removal
+       63          window.URL.revokeObjectURL(url);
+       64        } catch (err) {
+       65          console.error('Failed to export receipts:', err);
+       66 -        setError(err.response?.data?.message || 'Failed to export receipts. Please try again.');
+       66 +
+       67 +        // Handle 404 - no receipts found
+       68 +        if (err.response?.status === 404) {
+       69 +          setError('No receipts found for the selected date range. Try adjusting your filters or selecting a different time period.');
+       70 +        } else {
+       71 +          // For blob responses, we need to read the error message
+       72 +          if (err.response?.data instanceof Blob) {
+       73 +            const text = await err.response.data.text();
+       74 +            try {
+       75 +              const json = JSON.parse(text);
+       76 +              setError(json.message || 'Failed to export receipts. Please try again.');
+       77 +            } catch {
+       78 +              setError('Failed to export receipts. Please try again.');
+       79 +            }
+       80 +          } else {
+       81 +            setError(err.response?.data?.message || 'Failed to export receipts. Please try again.');
+       82 +          }
+       83 +        }
+       84        } finally {
+       85          setExporting(false);
+       86        }
+
+⏺ Perfect! Now when you select "Today" or any other date range that doesn't have receipts, you'll see a clear, user-friendly message: "No receipts found for the selected date range. Try adjusting your filters or
+   selecting a different time period."
+
+  This is much better than the generic "Failed to export receipts. Please try again." which made it sound like a system error when it was actually just an empty result set.
+
+## PROMPT:
 
 
 ## RESPONSE:
